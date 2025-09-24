@@ -1,0 +1,23 @@
+services:
+  # The web server for our application
+  webapp:
+    image: node:18-alpine
+    working_dir: /app
+    volumes:
+      - .:/app
+    # Uses a simple dev server to serve index.html
+    command: npx live-server --host=0.0.0.0 --port=8080 --no-browser
+    ports:
+      - "8080:8080"
+
+  # The service for running Playwright tests
+  playwright-tests:
+    image: mcr.microsoft.com/playwright:v1.55.1-jammy
+    working_dir: /app
+    volumes:
+      - .:/app
+    # Set the BASE_URL for the container environment
+    environment:
+      - BASE_URL=http://webapp:8080
+    # The command to execute when this service is run
+    command: sh -c "npm install && npx playwright test"

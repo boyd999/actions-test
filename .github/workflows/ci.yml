@@ -1,0 +1,36 @@
+# Name of the workflow
+name: E2E Tests with Docker Compose
+
+# Controls when the workflow will run
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs
+jobs:
+  e2e-tests:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks
+    steps:
+      # 1. Check out your repository code so the job can access it
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. Start the application services in the background using Docker Compose
+      - name: Start services
+        run: docker compose up -d webapp
+
+      # 3. Run the Playwright tests against the running application
+      - name: Run Playwright tests
+        run: docker compose run --rm playwright-tests
+
+      # 4. Stop and clean up the services after tests are complete
+      # This step runs even if the tests fail, ensuring cleanup
+      - name: Stop services
+        if: always()
+        run: docker compose down
